@@ -1,0 +1,656 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MATLAB_Postpro_App_v1</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-10-10"><meta name="DC.source" content="MATLAB_Postpro_App_v1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>MATLAB_Postpro_App_v1</h1><!--introduction--><p>App to display pairs of CFD postpro images</p><p>Author: Caleb St. Hill (<a href="mailto:cish1g18@soton.ac.uk">cish1g18@soton.ac.uk</a>) Date: 01/10/2022</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Setup</a></li><li><a href="#2">UI elements</a></li><li><a href="#3">Select BSL and Option Folders</a></li><li><a href="#4">Load all images in BSL and Option folders</a></li><li><a href="#5">Display image pairs in app</a></li><li><a href="#6">Callback Functions</a></li><li><a href="#7">Functions</a></li></ul></div><h2 id="1">Setup</h2><pre class="codeinput"><span class="keyword">global</span> frame fileExt optIm optIms bslIm bslIms VarSel SliceSel frameXYZ bslVars<span class="keyword">...</span>
+    optVars optVarInd bslVarInd bslSel optSel bslVarDir optVarDir<span class="keyword">...</span>
+    bslDir optDir bslDS optDS optSliceInd bslSliceInd optSlices<span class="keyword">...</span>
+    bslSlices;
+frame = [51,2,1]; <span class="comment">%counter: keeps track of current frame for x,y,z slices</span>
+frameXYZ = 1;
+VarSel = <span class="string">'Cp'</span>;
+SliceSel = <span class="string">'X'</span>;
+fileExt = <span class="string">'\*.png'</span>; <span class="comment">%default file extension</span>
+</pre><h2 id="2">UI elements</h2><pre class="codeinput">App = uifigure(<span class="string">'Name'</span>, <span class="string">'Matlab Postpro App v1'</span>);
+
+Grid = uigridlayout(App,[2,3]);
+Grid.RowHeight = {<span class="string">'1x'</span>,90};
+Grid.ColumnWidth = {<span class="string">'1x'</span>,<span class="string">'1x'</span>,<span class="string">'1x'</span>};
+
+UI = uibuttongroup(Grid);
+UI.Title = <span class="string">'Frame'</span>;
+UI.Layout.Row = 2;
+UI.Layout.Column = 1;
+
+Var = uibuttongroup(Grid, <span class="string">'SelectionChangedFcn'</span>, @varBtnCallback);
+Var.Title = <span class="string">'Variable'</span>;
+Var.Layout.Row = 2;
+Var.Layout.Column = 2;
+
+Slice = uibuttongroup(Grid, <span class="string">'SelectionChangedFcn'</span>, @sliceBtnCallback);
+Slice.Title = <span class="string">'Slice'</span>;
+Slice.Layout.Row = 2;
+Slice.Layout.Column = 3;
+
+leftBtn = uibutton(UI, <span class="string">'Icon'</span>, <span class="string">'left.png'</span>, <span class="string">'Text'</span>, <span class="string">''</span>,<span class="keyword">...</span>
+    <span class="string">'Position'</span>, [10, 10, 50, 50], <span class="string">'ButtonPushedFcn'</span>, @leftBtnCallback);
+rightBtn = uibutton(UI, <span class="string">'Icon'</span>, <span class="string">'right.png'</span>, <span class="string">'Text'</span>, <span class="string">''</span>,<span class="keyword">...</span>
+    <span class="string">'Position'</span>, [63, 10, 50, 50],<span class="string">'ButtonPushedFcn'</span>, @rightBtnCallback);
+
+<span class="comment">% Variable selection buttons</span>
+
+cpBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'Cp'</span>, <span class="string">'Position'</span>, [10, 40, 30, 22],<span class="keyword">...</span>
+    <span class="string">'Tag'</span>, <span class="string">'Cp'</span>);
+cptBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'CpT'</span>, <span class="string">'Position'</span>,<span class="keyword">...</span>
+    [44, 40, 35, 22], <span class="string">'Tag'</span>, <span class="string">'CpT'</span>);
+vorBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'Vorticity'</span>, <span class="string">'Position'</span>,<span class="keyword">...</span>
+    [83, 40, 60, 22], <span class="string">'Tag'</span>, <span class="string">'Vor'</span>);
+velXBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'NdVelX'</span>, <span class="string">'Position'</span>,<span class="keyword">...</span>
+    [10, 10, 50, 22], <span class="string">'Tag'</span>, <span class="string">'UX'</span>);
+velYBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'NdVelY'</span>, <span class="string">'Position'</span>,<span class="keyword">...</span>
+    [64, 10, 50, 22], <span class="string">'Tag'</span>, <span class="string">'UY'</span>);
+velZBtn = uitogglebutton(Var, <span class="string">'Text'</span>, <span class="string">'NdVelZ'</span>, <span class="string">'Position'</span>,<span class="keyword">...</span>
+    [118, 10, 50, 22], <span class="string">'Tag'</span>, <span class="string">'UZ'</span>);
+
+
+<span class="comment">% Slice selection buttons</span>
+
+xBtn = uitogglebutton(Slice, <span class="string">'Text'</span>, <span class="string">'X'</span>, <span class="string">'Position'</span>, [10, 10, 22, 22],<span class="keyword">...</span>
+    <span class="string">'Tag'</span>, <span class="string">'X'</span>);
+yBtn = uitogglebutton(Slice, <span class="string">'Text'</span>, <span class="string">'Y'</span>, <span class="string">'Position'</span>, [36, 10, 22, 22],<span class="keyword">...</span>
+    <span class="string">'Tag'</span>, <span class="string">'Y'</span>);
+zBtn = uitogglebutton(Slice, <span class="string">'Text'</span>, <span class="string">'Z'</span>, <span class="string">'Position'</span>, [62, 10, 22, 22],<span class="keyword">...</span>
+    <span class="string">'Tag'</span>, <span class="string">'Z'</span>);
+</pre><img vspace="5" hspace="5" src="MATLAB_Postpro_App_v1_01.png" alt=""> <h2 id="3">Select BSL and Option Folders</h2><pre class="codeinput"><span class="comment">%waitfor(msgbox('Select BSL directory'));</span>
+<span class="comment">%bslSel = uigetdir();</span>
+<span class="comment">%waitfor(msgbox('Select Option directory'));</span>
+<span class="comment">%optSel = uigetdir();</span>
+
+bslSel = <span class="string">'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option'</span>;
+optSel = <span class="string">'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL'</span>;
+
+bslVars = [];
+optVars = [];
+
+bslVarStruct = dir(bslSel);
+nBslVars = size(bslVarStruct);
+nBslVars = nBslVars(1);
+
+optVarStruct = dir(optSel);
+nOptVars = size(optVarStruct);
+nOptVars = nOptVars(1);
+
+<span class="keyword">for</span> i=1:nBslVars
+    bslVars = [bslVars, append(<span class="string">'\'</span>, string(bslVarStruct(i).name))];
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> i=1:nOptVars
+    optVars = [optVars, append(<span class="string">'\'</span>, string(optVarStruct(i).name))];
+<span class="keyword">end</span>
+
+optVarInd = find(endsWith(optVars, VarSel));
+bslVarInd = find(endsWith(bslVars, VarSel));
+
+optVarDir = append(optSel, optVars(optVarInd));
+bslVarDir = append(bslSel, bslVars(bslVarInd));
+
+bslSlices = [];
+optSlices = [];
+
+bslSliceStruct = dir(bslVarDir);
+nBslSlices = size(bslSliceStruct);
+nBslSlices = nBslSlices(1);
+
+optSliceStruct = dir(optVarDir);
+nOptSlices = size(optSliceStruct);
+nOptSlices = nOptSlices(1);
+
+<span class="keyword">for</span> i=1:nBslSlices
+    bslSlices = [bslSlices, append(<span class="string">'\'</span>, string(bslSliceStruct(i).name))];
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> i=1:nOptSlices
+    optSlices = [optSlices, append(<span class="string">'\'</span>, string(optSliceStruct(i).name))];
+<span class="keyword">end</span>
+
+optSliceInd = find(endsWith(optSlices, SliceSel));
+bslSliceInd = find(endsWith(bslSlices, SliceSel));
+
+optDir = append(optVarDir, optSlices(optSliceInd));
+bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+</pre><h2 id="4">Load all images in BSL and Option folders</h2><pre class="codeinput">bslDS = imageDatastore(append(bslDir,fileExt));
+bslIms = readall(bslDS);
+optDS = imageDatastore(append(optDir,fileExt));
+optIms = readall(optDS);
+</pre><h2 id="5">Display image pairs in app</h2><pre class="codeinput">bslIm = uiimage(Grid);
+bslIm.Layout.Row = 1;
+bslIm.Layout.Column = 1;
+bslIm.ImageSource = bslIms{frame(1)};
+
+optIm = uiimage(Grid);
+optIm.Layout.Row = 1;
+optIm.Layout.Column = 3;
+optIm.ImageSource = optIms{frame(1)};
+</pre><img vspace="5" hspace="5" src="MATLAB_Postpro_App_v1_02.png" alt=""> <h2 id="6">Callback Functions</h2><pre class="codeinput"><span class="keyword">function</span> leftBtnCallback(src,event)
+    <span class="keyword">global</span> frame optIm optIms bslIm bslIms SliceSel;
+    <span class="keyword">if</span> strcmp(SliceSel, <span class="string">'X'</span>)
+        frame(1) = mod(frame(1)-1,100);
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    <span class="keyword">elseif</span> strcmp(SliceSel, <span class="string">'Y'</span>)
+        frame(2) = mod(frame(2)-1,100);
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    <span class="keyword">elseif</span> strcmp(SliceSel, <span class="string">'Z'</span>)
+        frame(3) = mod(frame(3)-1,100);
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> rightBtnCallback(src,event)
+    <span class="keyword">global</span> frame optIm optIms bslIm bslIms SliceSel;
+    <span class="keyword">if</span> strcmp(SliceSel, <span class="string">'X'</span>)
+        frame(1) = mod(frame(1)+1,100);
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    <span class="keyword">elseif</span> strcmp(SliceSel, <span class="string">'Y'</span>)
+        frame(2) = mod(frame(2)+1,100);
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    <span class="keyword">elseif</span> strcmp(SliceSel, <span class="string">'Z'</span>)
+        frame(3) = mod(frame(3)+1,100);
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> varBtnCallback(src, event)
+    <span class="comment">% Callback function called by Var button group</span>
+    <span class="keyword">global</span> VarSel SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm<span class="keyword">...</span>
+        optVars bslVars optSlices bslSlices optDir bslDir frame<span class="keyword">...</span>
+        bslVarInd optVarInd optSel bslSel optVarDir bslVarDir;
+
+    <span class="keyword">if</span> strcmp(event.NewValue.Tag, <span class="string">'Cp'</span>)
+        VarSel = <span class="string">'Cp'</span>;
+    <span class="keyword">elseif</span> strcmp(event.NewValue.Tag, <span class="string">'CpT'</span>)
+        VarSel = <span class="string">'CpT'</span>;
+    <span class="keyword">elseif</span> strcmp(event.NewValue.Tag, <span class="string">'Vor'</span>)
+        VarSel = <span class="string">'Vorticity'</span>;
+    <span class="keyword">elseif</span> strcmp(event.NewValue.Tag, <span class="string">'UX'</span>)
+        VarSel = <span class="string">'X'</span>;
+    <span class="keyword">elseif</span> strcmp(event.NewValue.Tag, <span class="string">'UY'</span>)
+        VarSel = <span class="string">'Y'</span>;
+    <span class="keyword">elseif</span> strcmp(event.NewValue.Tag, <span class="string">'UZ'</span>)
+        VarSel = <span class="string">'Z'</span>;
+    <span class="keyword">end</span>
+
+    optVarInd = find(endsWith(optVars, VarSel));
+    bslVarInd = find(endsWith(bslVars, VarSel));
+
+    optVarDir = append(optSel, optVars(optVarInd));
+    bslVarDir = append(bslSel, bslVars(bslVarInd));
+
+    bslSlices = [];
+    optSlices = [];
+
+    bslSliceStruct = dir(bslVarDir);
+    nBslSlices = size(bslSliceStruct);
+    nBslSlices = nBslSlices(1);
+
+    optSliceStruct = dir(optVarDir);
+    nOptSlices = size(optSliceStruct);
+    nOptSlices = nOptSlices(1);
+
+    <span class="keyword">for</span> i=1:nBslSlices
+        bslSlices = [bslSlices, append(<span class="string">'\'</span>, string(bslSliceStruct(i).name))];
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> i=1:nOptSlices
+        optSlices = [optSlices, append(<span class="string">'\'</span>, string(optSliceStruct(i).name))];
+    <span class="keyword">end</span>
+
+    optSliceInd = find(endsWith(optSlices, SliceSel));
+    bslSliceInd = find(endsWith(bslSlices, SliceSel));
+
+    optDir = append(optVarDir, optSlices(optSliceInd));
+    bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+
+    bslDS = imageDatastore(append(bslDir,fileExt));
+    bslIms = readall(bslDS);
+    optDS = imageDatastore(append(optDir,fileExt));
+    optIms = readall(optDS);
+
+    <span class="keyword">if</span> SliceSel == <span class="string">'X'</span>
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    <span class="keyword">elseif</span> SliceSel == <span class="string">'Y'</span>
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    <span class="keyword">elseif</span> SliceSel == <span class="string">'Z'</span>
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    <span class="keyword">end</span>
+
+
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> sliceBtnCallback(src, event)
+    <span class="comment">% Callback function called by Slice button group</span>
+    <span class="keyword">global</span> SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm<span class="keyword">...</span>
+        optVarDir bslVarDir optSlices bslSlices optDir bslDir frame;
+    <span class="keyword">if</span> event.NewValue.Tag == <span class="string">'X'</span>
+        <span class="comment">% set slice selction</span>
+        SliceSel = <span class="string">'X'</span>;
+    <span class="keyword">elseif</span> event.NewValue.Tag == <span class="string">'Y'</span>
+        <span class="comment">% set slice selction</span>
+        SliceSel = <span class="string">'Y'</span>;
+    <span class="keyword">elseif</span> event.NewValue.Tag == <span class="string">'Z'</span>
+        <span class="comment">% set slice selction</span>
+        SliceSel = <span class="string">'Z'</span>;
+    <span class="keyword">end</span>
+
+    optSliceInd = find(endsWith(optSlices, SliceSel));
+    bslSliceInd = find(endsWith(bslSlices, SliceSel));
+
+    optDir = append(optVarDir, optSlices(optSliceInd));
+    bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+
+    <span class="comment">% use updated image path to display image pair</span>
+    bslDS = imageDatastore(append(bslDir,fileExt));
+    bslIms = readall(bslDS);
+    optDS = imageDatastore(append(optDir,fileExt));
+    optIms = readall(optDS);
+
+    <span class="keyword">if</span> event.NewValue.Tag == <span class="string">'X'</span>
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    <span class="keyword">elseif</span> event.NewValue.Tag == <span class="string">'Y'</span>
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    <span class="keyword">elseif</span> event.NewValue.Tag == <span class="string">'Z'</span>
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="7">Functions</h2><pre class="codeinput"><span class="keyword">function</span> delOut = delta(optIm, bslIm, var)
+    <span class="comment">% Function that uses lookup tables for Cp, CpT, Vorticity, and Vel XYZ</span>
+    <span class="comment">% to convert image file into matrix of numerical values, based on the</span>
+    <span class="comment">% RGB values for each pixel.</span>
+
+
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% MATLAB_Postpro_App_v1
+% App to display pairs of CFD postpro images
+%
+% Author: Caleb St. Hill (cish1g18@soton.ac.uk)
+% Date: 01/10/2022
+
+%% Setup
+global frame fileExt optIm optIms bslIm bslIms VarSel SliceSel frameXYZ bslVars...
+    optVars optVarInd bslVarInd bslSel optSel bslVarDir optVarDir...
+    bslDir optDir bslDS optDS optSliceInd bslSliceInd optSlices...
+    bslSlices;
+frame = [51,2,1]; %counter: keeps track of current frame for x,y,z slices
+frameXYZ = 1;
+VarSel = 'Cp';
+SliceSel = 'X';
+fileExt = '\*.png'; %default file extension
+%% UI elements
+
+App = uifigure('Name', 'Matlab Postpro App v1');
+
+Grid = uigridlayout(App,[2,3]);
+Grid.RowHeight = {'1x',90};
+Grid.ColumnWidth = {'1x','1x','1x'};
+
+UI = uibuttongroup(Grid);
+UI.Title = 'Frame';
+UI.Layout.Row = 2;
+UI.Layout.Column = 1;
+
+Var = uibuttongroup(Grid, 'SelectionChangedFcn', @varBtnCallback);
+Var.Title = 'Variable';
+Var.Layout.Row = 2;
+Var.Layout.Column = 2;
+
+Slice = uibuttongroup(Grid, 'SelectionChangedFcn', @sliceBtnCallback);
+Slice.Title = 'Slice';
+Slice.Layout.Row = 2;
+Slice.Layout.Column = 3;
+
+leftBtn = uibutton(UI, 'Icon', 'left.png', 'Text', '',...
+    'Position', [10, 10, 50, 50], 'ButtonPushedFcn', @leftBtnCallback);
+rightBtn = uibutton(UI, 'Icon', 'right.png', 'Text', '',...
+    'Position', [63, 10, 50, 50],'ButtonPushedFcn', @rightBtnCallback);
+
+% Variable selection buttons 
+
+cpBtn = uitogglebutton(Var, 'Text', 'Cp', 'Position', [10, 40, 30, 22],...
+    'Tag', 'Cp');
+cptBtn = uitogglebutton(Var, 'Text', 'CpT', 'Position',...
+    [44, 40, 35, 22], 'Tag', 'CpT');
+vorBtn = uitogglebutton(Var, 'Text', 'Vorticity', 'Position',...
+    [83, 40, 60, 22], 'Tag', 'Vor');
+velXBtn = uitogglebutton(Var, 'Text', 'NdVelX', 'Position',...
+    [10, 10, 50, 22], 'Tag', 'UX');
+velYBtn = uitogglebutton(Var, 'Text', 'NdVelY', 'Position',...
+    [64, 10, 50, 22], 'Tag', 'UY');
+velZBtn = uitogglebutton(Var, 'Text', 'NdVelZ', 'Position',...
+    [118, 10, 50, 22], 'Tag', 'UZ');
+
+
+% Slice selection buttons
+
+xBtn = uitogglebutton(Slice, 'Text', 'X', 'Position', [10, 10, 22, 22],...
+    'Tag', 'X');
+yBtn = uitogglebutton(Slice, 'Text', 'Y', 'Position', [36, 10, 22, 22],...
+    'Tag', 'Y');
+zBtn = uitogglebutton(Slice, 'Text', 'Z', 'Position', [62, 10, 22, 22],...
+    'Tag', 'Z');
+%% Select BSL and Option Folders
+
+%waitfor(msgbox('Select BSL directory'));
+%bslSel = uigetdir();
+%waitfor(msgbox('Select Option directory'));
+%optSel = uigetdir();
+
+bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option';
+optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL';
+
+bslVars = [];
+optVars = [];
+
+bslVarStruct = dir(bslSel);
+nBslVars = size(bslVarStruct);
+nBslVars = nBslVars(1);
+
+optVarStruct = dir(optSel);
+nOptVars = size(optVarStruct);
+nOptVars = nOptVars(1);
+
+for i=1:nBslVars
+    bslVars = [bslVars, append('\', string(bslVarStruct(i).name))];
+end
+
+for i=1:nOptVars
+    optVars = [optVars, append('\', string(optVarStruct(i).name))];
+end
+
+optVarInd = find(endsWith(optVars, VarSel));
+bslVarInd = find(endsWith(bslVars, VarSel));
+
+optVarDir = append(optSel, optVars(optVarInd));
+bslVarDir = append(bslSel, bslVars(bslVarInd));
+
+bslSlices = [];
+optSlices = [];
+
+bslSliceStruct = dir(bslVarDir);
+nBslSlices = size(bslSliceStruct);
+nBslSlices = nBslSlices(1);
+
+optSliceStruct = dir(optVarDir);
+nOptSlices = size(optSliceStruct);
+nOptSlices = nOptSlices(1);
+
+for i=1:nBslSlices
+    bslSlices = [bslSlices, append('\', string(bslSliceStruct(i).name))];
+end
+
+for i=1:nOptSlices
+    optSlices = [optSlices, append('\', string(optSliceStruct(i).name))];
+end
+
+optSliceInd = find(endsWith(optSlices, SliceSel));
+bslSliceInd = find(endsWith(bslSlices, SliceSel));
+
+optDir = append(optVarDir, optSlices(optSliceInd));
+bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+%% Load all images in BSL and Option folders
+
+bslDS = imageDatastore(append(bslDir,fileExt));
+bslIms = readall(bslDS);
+optDS = imageDatastore(append(optDir,fileExt));
+optIms = readall(optDS);
+
+%% Display image pairs in app
+
+bslIm = uiimage(Grid);
+bslIm.Layout.Row = 1;
+bslIm.Layout.Column = 1;
+bslIm.ImageSource = bslIms{frame(1)};
+
+optIm = uiimage(Grid);
+optIm.Layout.Row = 1;
+optIm.Layout.Column = 3;
+optIm.ImageSource = optIms{frame(1)};
+
+
+%% Callback Functions
+
+function leftBtnCallback(src,event)
+    global frame optIm optIms bslIm bslIms SliceSel;
+    if strcmp(SliceSel, 'X')
+        frame(1) = mod(frame(1)-1,100);
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    elseif strcmp(SliceSel, 'Y')
+        frame(2) = mod(frame(2)-1,100);
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    elseif strcmp(SliceSel, 'Z')
+        frame(3) = mod(frame(3)-1,100);
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    end
+end
+
+function rightBtnCallback(src,event)
+    global frame optIm optIms bslIm bslIms SliceSel;
+    if strcmp(SliceSel, 'X')
+        frame(1) = mod(frame(1)+1,100);
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    elseif strcmp(SliceSel, 'Y')
+        frame(2) = mod(frame(2)+1,100);
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    elseif strcmp(SliceSel, 'Z')
+        frame(3) = mod(frame(3)+1,100);
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)};
+    end
+end
+
+function varBtnCallback(src, event)
+    % Callback function called by Var button group
+    global VarSel SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm...
+        optVars bslVars optSlices bslSlices optDir bslDir frame...
+        bslVarInd optVarInd optSel bslSel optVarDir bslVarDir;
+    
+    if strcmp(event.NewValue.Tag, 'Cp')
+        VarSel = 'Cp';   
+    elseif strcmp(event.NewValue.Tag, 'CpT')
+        VarSel = 'CpT';
+    elseif strcmp(event.NewValue.Tag, 'Vor')
+        VarSel = 'Vorticity';  
+    elseif strcmp(event.NewValue.Tag, 'UX')
+        VarSel = 'X';
+    elseif strcmp(event.NewValue.Tag, 'UY')
+        VarSel = 'Y';
+    elseif strcmp(event.NewValue.Tag, 'UZ')
+        VarSel = 'Z';  
+    end
+    
+    optVarInd = find(endsWith(optVars, VarSel));
+    bslVarInd = find(endsWith(bslVars, VarSel));
+
+    optVarDir = append(optSel, optVars(optVarInd));
+    bslVarDir = append(bslSel, bslVars(bslVarInd));
+
+    bslSlices = [];
+    optSlices = [];
+
+    bslSliceStruct = dir(bslVarDir);
+    nBslSlices = size(bslSliceStruct);
+    nBslSlices = nBslSlices(1);
+
+    optSliceStruct = dir(optVarDir);
+    nOptSlices = size(optSliceStruct);
+    nOptSlices = nOptSlices(1);
+
+    for i=1:nBslSlices
+        bslSlices = [bslSlices, append('\', string(bslSliceStruct(i).name))];
+    end
+
+    for i=1:nOptSlices
+        optSlices = [optSlices, append('\', string(optSliceStruct(i).name))];
+    end
+
+    optSliceInd = find(endsWith(optSlices, SliceSel));
+    bslSliceInd = find(endsWith(bslSlices, SliceSel));
+    
+    optDir = append(optVarDir, optSlices(optSliceInd));
+    bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+    
+    bslDS = imageDatastore(append(bslDir,fileExt));
+    bslIms = readall(bslDS);
+    optDS = imageDatastore(append(optDir,fileExt));
+    optIms = readall(optDS);
+    
+    if SliceSel == 'X'
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    elseif SliceSel == 'Y'
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    elseif SliceSel == 'Z'
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)}; 
+    end
+    
+    
+    
+end
+
+function sliceBtnCallback(src, event)
+    % Callback function called by Slice button group
+    global SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm...
+        optVarDir bslVarDir optSlices bslSlices optDir bslDir frame;
+    if event.NewValue.Tag == 'X'
+        % set slice selction
+        SliceSel = 'X';
+    elseif event.NewValue.Tag == 'Y'
+        % set slice selction
+        SliceSel = 'Y';
+    elseif event.NewValue.Tag == 'Z'
+        % set slice selction
+        SliceSel = 'Z'; 
+    end
+    
+    optSliceInd = find(endsWith(optSlices, SliceSel));
+    bslSliceInd = find(endsWith(bslSlices, SliceSel));
+        
+    optDir = append(optVarDir, optSlices(optSliceInd));
+    bslDir = append(bslVarDir, bslSlices(bslSliceInd));
+        
+    % use updated image path to display image pair
+    bslDS = imageDatastore(append(bslDir,fileExt));
+    bslIms = readall(bslDS);
+    optDS = imageDatastore(append(optDir,fileExt));
+    optIms = readall(optDS);
+    
+    if event.NewValue.Tag == 'X'
+        bslIm.ImageSource = bslIms{frame(1)};
+        optIm.ImageSource = optIms{frame(1)};
+    elseif event.NewValue.Tag == 'Y'
+        bslIm.ImageSource = bslIms{frame(2)};
+        optIm.ImageSource = optIms{frame(2)};
+    elseif event.NewValue.Tag == 'Z'
+        bslIm.ImageSource = bslIms{frame(3)};
+        optIm.ImageSource = optIms{frame(3)}; 
+    end
+end
+%% Functions
+
+function delOut = delta(optIm, bslIm, var)
+    % Function that uses lookup tables for Cp, CpT, Vorticity, and Vel XYZ
+    % to convert image file into matrix of numerical values, based on the
+    % RGB values for each pixel.
+    
+    
+    
+end
+
+##### SOURCE END #####
+--></body></html>
