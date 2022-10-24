@@ -2,9 +2,9 @@ bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example
 optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\Cp\23-A00-CSH-001-Cp-Z';
 
 
-optIm = imread(fullfile(optSel, 'frame00050.png'));
-bslIm = imread(fullfile(bslSel, 'frame00050.png'));
-Var = 'Cp'
+optIm = im2double(imread(fullfile(optSel, 'frame00050.png')));
+bslIm = im2double(imread(fullfile(bslSel, 'frame00050.png')));
+Var = 'Cp';
     
     
     % Number of steps on colour scale. If this changes, change this value.
@@ -37,37 +37,37 @@ Var = 'Cp'
     
     % RGB values for each colour scale
     CpScale = [[255,0,51];[255,99,60];[255,151,69];[253,205,78];...
-        [252,248,87];[220,242,77];[175,229,61];[113,211,39];[30,199,61];...
-        [69,193,137];[92,187,184];[99,177,205];[87,162,202];...
-        [73,146,199];[54,129,195];[36,111,194];[32,97,195];[27,81,197];...
-        [20,60,199];[9,27,201];[68,0,192];[103,0,179];[130,0,165];...
-        [150,0,150];[141,0,141];[131,0,131];[122,0,122];[108,0,108];...
+        [252,248,87];[220,242,77];[175,229,61];[115,215,40];[31,202,62];...
+        [70,196,139];[94,190,187];[101,180,209];[89,165,205];...
+        [74,149,202];[55,131,198];[37,113,197];[33,99,198];[27,82,200];...
+        [20,61,202];[9,27,204];[69,0,195];[105,0,182];[132,0,168];...
+        [153,0,153];[143,0,143];[132,0,132];[121,0,121];[108,0,108];...
         [94,0,94];[76,0,76];[54,0,54];[0,0,0]];
-    CpScale = uint8(CpScale);
     CpLookup = [linspace(CpMax-CpStep,CpMin,nSteps)];
     CpPal = [[234,0,255];[137,59,255];[33,102,243];[0,161,250];...
         [0,229,216];[134,255,118];[255,255,255];[246,255,0];[255,231,0];...
         [255,165,0];[255,61,0];[137,0,0];[40,0,0]];
-    CpPal = uint8(CpPal);
     CpDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;0.375;...
-        0.5;0.625;0.75]
+        0.5;0.625;0.75];
     
-    geom = uint8([32,32,30]);
+    geom = [32,32,30];
     
     delta = zeros(size(bslIm));
     tic
     for i = 1:size(delta,1)
         for j = 1:size(delta,2)
-            bsl = bslIm(i,j,[1,2,3]);
-            opt = optIm(i,j,[1,2,3]);
+            bsl = 255*[bslIm(i,j,1), bslIm(i,j,2), bslIm(i,j,3)];
+            opt = 255*[optIm(i,j,1), optIm(i,j,2), optIm(i,j,3)];
 
-            if abs(bsl-geom)<uint8([3,3,3]) | abs(opt-geom)<uint8([3,3,3])
+            if abs(bsl-geom)(1)<[3,3,3] | abs(opt-geom)<[3,3,3]
                 delta(i,j,[1,2,3]) = [0,0,0];
             elseif bsl == opt
-                delta(i,j,[1,2,3]) = CpPal(7);
+                delta(i,j,[1,2,3]) = CpPal(7, [1,2,3]);
             else
-                bslInd = find(abs(CpScale-bsl) < [1,1,1], 1);
-                optInd = find(abs(CpScale-opt) < [1,1,1], 1);
+                bslDel = abs(CpScale-bsl);
+                optDel = abs(CpScale-opt);
+                bslInd = find(bslDel(:,1)<10 & bslDel(:,2)<10 & bslDel(:,3)<10, 1);
+                optInd = find(optDel(:,1)<10 & optDel(:,2)<10 & optDel(:,3)<10, 1);
                 
                 bslVal = CpLookup(bslInd);
                 optVal = CpLookup(optInd);
@@ -79,6 +79,8 @@ Var = 'Cp'
                     delta(i,j,[1,2,3]) = CpPal(13, [1,2,3]);
                 else
                     k=find(CpDelta==del,1);
+                    disp(delta(i,j,[1,2,3]))
+                    disp(CpPal(k,[1,2,3]))
                     delta(i,j,[1,2,3])=CpPal(k,[1,2,3]);
                 end
             end
