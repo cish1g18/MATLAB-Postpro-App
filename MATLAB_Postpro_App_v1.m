@@ -1,5 +1,5 @@
 %% MATLAB_Postpro_App_v1
-% App to display pairs of CFD postpro images
+% App to display pairs of CFD postpro images and generate deltas
 %
 % Author: Caleb St. Hill (cish1g18@soton.ac.uk)
 % Date: 01/10/2022
