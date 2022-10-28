@@ -1,9 +1,13 @@
-bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL\Cp\05-04-2022_HC-Cp-Z';
-optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\Cp\23-A00-CSH-001-Cp-Z';
+bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL\Cp\05-04-2022_HC-Cp-X';
+optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\Cp\23-A00-CSH-001-Cp-X';
 
 
-optIm = im2double(imread(fullfile(optSel, 'frame00050.png')));
-bslIm = im2double(imread(fullfile(bslSel, 'frame00050.png')));
+optIm = im2double(imread(fullfile(optSel, 'frame00055.png')));
+bslIm = im2double(imread(fullfile(bslSel, 'frame00055.png')));
+
+%optIm = imread(fullfile(optSel, 'frame00050.png'));
+%bslIm = imread(fullfile(bslSel, 'frame00050.png'));
+
 Var = 'Cp';
     
     
@@ -37,7 +41,7 @@ Var = 'Cp';
     
     % RGB values for each colour scale
     CpScale = [[255,0,51];[255,99,60];[255,151,69];[253,205,78];...
-        [252,248,87];[220,242,77];[175,229,61];[115,215,40];[31,202,62];...
+        [252,248,87];[220,242,77];[175,229,61];[115,215,40];[30,199,61];...
         [70,196,139];[94,190,187];[101,180,209];[89,165,205];...
         [74,149,202];[55,131,198];[37,113,197];[33,99,198];[27,82,200];...
         [20,61,202];[9,27,204];[69,0,195];[105,0,182];[132,0,168];...
@@ -50,16 +54,24 @@ Var = 'Cp';
     CpDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;0.375;...
         0.5;0.625;0.75];
     
-    geom = [32,32,30];
+    geom = [0,0,0];
     
-    delta = zeros(size(bslIm));
+    delta = uint8(zeros(size(bslIm)));
+    
+    
+    %figure()
+    %imshow(bslIm)
+    %impixelinfo()
+    %figure()
+    %imshow(optIm)
+    
     tic
     for i = 1:size(delta,1)
         for j = 1:size(delta,2)
             bsl = 255*[bslIm(i,j,1), bslIm(i,j,2), bslIm(i,j,3)];
             opt = 255*[optIm(i,j,1), optIm(i,j,2), optIm(i,j,3)];
 
-            if abs(bsl-geom)(1)<[3,3,3] | abs(opt-geom)<[3,3,3]
+            if abs(bsl-geom)<[3,3,3] | abs(opt-geom)<[3,3,3]
                 delta(i,j,[1,2,3]) = [0,0,0];
             elseif bsl == opt
                 delta(i,j,[1,2,3]) = CpPal(7, [1,2,3]);
@@ -69,55 +81,27 @@ Var = 'Cp';
                 bslInd = find(bslDel(:,1)<10 & bslDel(:,2)<10 & bslDel(:,3)<10, 1);
                 optInd = find(optDel(:,1)<10 & optDel(:,2)<10 & optDel(:,3)<10, 1);
                 
-                bslVal = CpLookup(bslInd);
-                optVal = CpLookup(optInd);
+                if isempty(bslInd) | isempty(optInd)
+                    del = 0;
+                else
+                    bslVal = CpLookup(bslInd);
+                    optVal = CpLookup(optInd);
+                    del = optVal-bslVal;
+                end
                 
-                del = optVal-bslVal;
+                
                 if del<=-0.75
                     delta(i,j,[1,2,3]) = CpPal(1, [1,2,3]);
                 elseif del>=0.75
                     delta(i,j,[1,2,3]) = CpPal(13, [1,2,3]);
                 else
                     k=find(CpDelta==del,1);
-                    disp(delta(i,j,[1,2,3]))
-                    disp(CpPal(k,[1,2,3]))
                     delta(i,j,[1,2,3])=CpPal(k,[1,2,3]);
                 end
             end
         end
     end
     
-    %for i =1:13
-    %    delta = changem(delta, [(0.125*i)-0.875,0,0], CpDelta(i,[1,2,3]));
-    %end
-    
-    %delta = changem(delta, [-0.75,0,0], CpDelta(1,[1,2,3]));
-    %delta = changem(delta, [-0.625,0,0], CpDelta(2,[1,2,3]));
-    %delta = changem(delta, [-0.5,0,0], CpDelta(3,[1,2,3]));
-    %delta = changem(delta, [-0.325,0,0], CpDelta(4,[1,2,3]));
-    %delta = changem(delta, [-0.25,0,0], CpDelta(5,[1,2,3]));
-    %delta = changem(delta, [-0.125,0,0], CpDelta(6,[1,2,3]));
-    %delta = changem(delta, [0,0,0], CpDelta(7,[1,2,3]));
-    %delta = changem(delta, [0.125,0,0], CpDelta(8,[1,2,3]));
-    %delta = changem(delta, [0.25,0,0], CpDelta(9,[1,2,3]));
-    %delta = changem(delta, [0.325,0,0], CpDelta(10,[1,2,3]));
-    %delta = changem(delta, [0.5,0,0], CpDelta(11,[1,2,3]));
-    %delta = changem(delta, [0.625,0,0], CpDelta(12,[1,2,3]));
-    %delta = changem(delta, [0.75,0,0], CpDelta(13,[1,2,3]));
-    
-    toc
-    
+    figure()
     imshow(delta)
     impixelinfo()
-    % Lookup table to convert from RGB value to numerical value
-    
-    %CpTLookup = [linspace(CpTMax-CpTStep,CpTMin,nSteps), CpTScale];
-    %VorLookup = [linspace(VorMax-VorStep,VorMin,nSteps), VorScale];
-    %VelLookup = [linspace(VelMax-VelStep,VelMin,nSteps), VelScale];
-    
-    
-    
-    
-    
-    
-    
