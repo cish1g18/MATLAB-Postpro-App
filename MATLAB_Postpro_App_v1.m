@@ -16,9 +16,9 @@ SliceSel = 'X';
 fileExt = '\*.png'; %default file extension
 %% UI elements
 
-App = uifigure('Name', 'Matlab Postpro App v1');
+App.UIFigure = uifigure('Name', 'Matlab Postpro App v1');
 
-Grid = uigridlayout(App,[2,3]);
+Grid = uigridlayout(App.UIFigure,[2,3]);
 Grid.RowHeight = {'1x',90};
 Grid.ColumnWidth = {'1x','1x','1x'};
 
@@ -150,15 +150,15 @@ optIm.ImageSource = optIms{frame(1)};
 function leftBtnCallback(src,event)
     global frame optIm optIms bslIm bslIms SliceSel;
     if strcmp(SliceSel, 'X')
-        frame(1) = mod(frame(1)-1,100);
+        frame(1) = mod(frame(1)-2,100)+1;
         bslIm.ImageSource = bslIms{frame(1)};
         optIm.ImageSource = optIms{frame(1)};
     elseif strcmp(SliceSel, 'Y')
-        frame(2) = mod(frame(2)-1,100);
+        frame(2) = mod(frame(2)-2,100)+1;
         bslIm.ImageSource = bslIms{frame(2)};
         optIm.ImageSource = optIms{frame(2)};
     elseif strcmp(SliceSel, 'Z')
-        frame(3) = mod(frame(3)-1,100);
+        frame(3) = mod(frame(3)-2,100):+1;
         bslIm.ImageSource = bslIms{frame(3)};
         optIm.ImageSource = optIms{frame(3)};
     end
@@ -167,15 +167,15 @@ end
 function rightBtnCallback(src,event)
     global frame optIm optIms bslIm bslIms SliceSel;
     if strcmp(SliceSel, 'X')
-        frame(1) = mod(frame(1)+1,100);
+        frame(1) = mod(frame(1),100)+1;
         bslIm.ImageSource = bslIms{frame(1)};
         optIm.ImageSource = optIms{frame(1)};
     elseif strcmp(SliceSel, 'Y')
-        frame(2) = mod(frame(2)+1,100);
+        frame(2) = mod(frame(2),100)+1;
         bslIm.ImageSource = bslIms{frame(2)};
         optIm.ImageSource = optIms{frame(2)};
     elseif strcmp(SliceSel, 'Z')
-        frame(3) = mod(frame(3)+1,100);
+        frame(3) = mod(frame(3),100)+1;
         bslIm.ImageSource = bslIms{frame(3)};
         optIm.ImageSource = optIms{frame(3)};
     end
