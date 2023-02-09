@@ -10,40 +10,63 @@ global frame fileExt optIm optIms bslIm bslIms VarSel SliceSel frameXYZ bslVars.
     bslDir optDir bslDS optDS optSliceInd bslSliceInd optSlices...
     bslSlices;
 frame = [51,2,1]; %counter: keeps track of current frame for x,y,z slices
-frameXYZ = 1;
+frameXYZ = 1; % frame XYZ value (x=1,y=2,z=3)
 VarSel = 'Cp';
 SliceSel = 'X';
 fileExt = '\*.png'; %default file extension
 %% UI elements
 
-App.UIFigure = uifigure('Name', 'Matlab Postpro App v1');
+App.UIFigure = uifigure('Name', 'Matlab Postpro App v1','KeyPressFcn',...
+    @keyCallback);
 
-Grid = uigridlayout(App.UIFigure,[2,3]);
-Grid.RowHeight = {'1x',90};
+Grid = uigridlayout(App.UIFigure,[3,3]);
+Grid.RowHeight = {30,'1x',90};
 Grid.ColumnWidth = {'1x','1x','1x'};
+
+Col1Title = uilabel(Grid,'Text','BSL');
+Col1Title.Layout.Row = 1;
+Col1Title.Layout.Column = 1;
+Col1Title.HorizontalAlignment = 'center';
+Col1Title.VerticalAlignment = 'center';
+Col1Title.FontSize = 24;
+
+Col2Title = uilabel(Grid,'Text','Delta');
+Col2Title.Layout.Row = 1;
+Col2Title.Layout.Column = 2;
+Col2Title.HorizontalAlignment = 'center';
+Col2Title.VerticalAlignment = 'center';
+Col2Title.FontSize = 24;
+
+Col3Title = uilabel(Grid,'Text','Option');
+Col3Title.Layout.Row = 1;
+Col3Title.Layout.Column = 3;
+Col3Title.HorizontalAlignment = 'center';
+Col3Title.VerticalAlignment = 'center';
+Col3Title.FontSize = 24;
 
 UI = uibuttongroup(Grid);
 UI.Title = 'Frame';
-UI.Layout.Row = 2;
+UI.Layout.Row = 3;
 UI.Layout.Column = 1;
 
 Var = uibuttongroup(Grid, 'SelectionChangedFcn', @varBtnCallback);
 Var.Title = 'Variable';
-Var.Layout.Row = 2;
+Var.Layout.Row = 3;
 Var.Layout.Column = 2;
 
 Slice = uibuttongroup(Grid, 'SelectionChangedFcn', @sliceBtnCallback);
 Slice.Title = 'Slice';
-Slice.Layout.Row = 2;
+Slice.Layout.Row = 3;
 Slice.Layout.Column = 3;
 
+% Navigation & Delta Buttons
 leftBtn = uibutton(UI, 'Icon', 'left.png', 'Text', '',...
     'Position', [10, 10, 50, 50], 'ButtonPushedFcn', @leftBtnCallback);
 rightBtn = uibutton(UI, 'Icon', 'right.png', 'Text', '',...
     'Position', [63, 10, 50, 50],'ButtonPushedFcn', @rightBtnCallback);
+delBtn = uibutton(UI, 'Position', [116, 10, 50,50], 'Text', 'Delta');
 
 % Variable selection buttons 
-
 cpBtn = uitogglebutton(Var, 'Text', 'Cp', 'Position', [10, 40, 30, 22],...
     'Tag', 'Cp');
 cptBtn = uitogglebutton(Var, 'Text', 'CpT', 'Position',...
@@ -59,7 +82,6 @@ velZBtn = uitogglebutton(Var, 'Text', 'NdVelZ', 'Position',...
 
 
 % Slice selection buttons
-
 xBtn = uitogglebutton(Slice, 'Text', 'X', 'Position', [10, 10, 22, 22],...
     'Tag', 'X');
 yBtn = uitogglebutton(Slice, 'Text', 'Y', 'Position', [36, 10, 22, 22],...
@@ -68,13 +90,13 @@ zBtn = uitogglebutton(Slice, 'Text', 'Z', 'Position', [62, 10, 22, 22],...
     'Tag', 'Z');
 %% Select BSL and Option Folders
 
-%waitfor(msgbox('Select BSL directory'));
-%bslSel = uigetdir();
-%waitfor(msgbox('Select Option directory'));
-%optSel = uigetdir();
+waitfor(msgbox('Select BSL directory'));
+bslSel = uigetdir('BSL Directory');
+waitfor(msgbox('Select Option directory'));
+optSel = uigetdir(bslSel, 'Option Directory');
 
-bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option';
-optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL';
+%bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option';
+%optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL';
 
 bslVars = [];
 optVars = [];
@@ -135,57 +157,51 @@ optIms = readall(optDS);
 %% Display image pairs in app
 
 bslIm = uiimage(Grid);
-bslIm.Layout.Row = 1;
+bslIm.Layout.Row = 2;
 bslIm.Layout.Column = 1;
-bslIm.ImageSource = bslIms{frame(1)};
+bslIm.ImageSource = bslIms{frame(frameXYZ)};
 
 optIm = uiimage(Grid);
-optIm.Layout.Row = 1;
+optIm.Layout.Row = 2;
 optIm.Layout.Column = 3;
-optIm.ImageSource = optIms{frame(1)};
+optIm.ImageSource = optIms{frame(frameXYZ)};
 
 
 %% Callback Functions
 
 function leftBtnCallback(src,event)
-    global frame optIm optIms bslIm bslIms SliceSel;
-    if strcmp(SliceSel, 'X')
-        frame(1) = mod(frame(1)-2,100)+1;
-        bslIm.ImageSource = bslIms{frame(1)};
-        optIm.ImageSource = optIms{frame(1)};
-    elseif strcmp(SliceSel, 'Y')
-        frame(2) = mod(frame(2)-2,100)+1;
-        bslIm.ImageSource = bslIms{frame(2)};
-        optIm.ImageSource = optIms{frame(2)};
-    elseif strcmp(SliceSel, 'Z')
-        frame(3) = mod(frame(3)-2,100):+1;
-        bslIm.ImageSource = bslIms{frame(3)};
-        optIm.ImageSource = optIms{frame(3)};
-    end
+    global frame optIm optIms bslIm bslIms SliceSel frameXYZ;
+    frame(frameXYZ) = mod(frame(frameXYZ)-2,100)+1;
+    bslIm.ImageSource = bslIms{frame(frameXYZ)};
+    optIm.ImageSource = optIms{frame(frameXYZ)};
 end
 
 function rightBtnCallback(src,event)
-    global frame optIm optIms bslIm bslIms SliceSel;
-    if strcmp(SliceSel, 'X')
-        frame(1) = mod(frame(1),100)+1;
-        bslIm.ImageSource = bslIms{frame(1)};
-        optIm.ImageSource = optIms{frame(1)};
-    elseif strcmp(SliceSel, 'Y')
-        frame(2) = mod(frame(2),100)+1;
-        bslIm.ImageSource = bslIms{frame(2)};
-        optIm.ImageSource = optIms{frame(2)};
-    elseif strcmp(SliceSel, 'Z')
-        frame(3) = mod(frame(3),100)+1;
-        bslIm.ImageSource = bslIms{frame(3)};
-        optIm.ImageSource = optIms{frame(3)};
-    end
+    global frame optIm optIms bslIm bslIms SliceSel frameXYZ;
+    frame(frameXYZ) = mod(frame(frameXYZ),100)+1;
+    bslIm.ImageSource = bslIms{frame(frameXYZ)};
+    optIm.ImageSource = optIms{frame(frameXYZ)};
 end
+
+function keyCallback(src,event)
+    global frame optIm optIms bslIm bslIms SliceSel frameXYZ;
+    if strcmp(event.Key,'leftarrow')
+        frame(frameXYZ) = mod(frame(frameXYZ)-2,100)+1;
+        bslIm.ImageSource = bslIms{frame(frameXYZ)};
+        optIm.ImageSource = optIms{frame(frameXYZ)};
+    elseif strcmp(event.Key,'rightarrow')
+        frame(frameXYZ) = mod(frame(frameXYZ),100)+1;
+        bslIm.ImageSource = bslIms{frame(frameXYZ)};
+        optIm.ImageSource = optIms{frame(frameXYZ)};
+    end  
+end
+
 
 function varBtnCallback(src, event)
     % Callback function called by Var button group
     global VarSel SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm...
         optVars bslVars optSlices bslSlices optDir bslDir frame...
-        bslVarInd optVarInd optSel bslSel optVarDir bslVarDir;
+        bslVarInd optVarInd optSel bslSel optVarDir bslVarDir frameXYZ;
     
     if strcmp(event.NewValue.Tag, 'Cp')
         VarSel = 'Cp';   
@@ -217,7 +233,7 @@ function varBtnCallback(src, event)
     optSliceStruct = dir(optVarDir);
     nOptSlices = size(optSliceStruct);
     nOptSlices = nOptSlices(1);
-
+    
     for i=1:nBslSlices
         bslSlices = [bslSlices, append('\', string(bslSliceStruct(i).name))];
     end
@@ -226,8 +242,8 @@ function varBtnCallback(src, event)
         optSlices = [optSlices, append('\', string(optSliceStruct(i).name))];
     end
 
-    optSliceInd = find(endsWith(optSlices, SliceSel));
-    bslSliceInd = find(endsWith(bslSlices, SliceSel));
+    optSliceInd = endsWith(optSlices, SliceSel);
+    bslSliceInd = endsWith(bslSlices, SliceSel);
     
     optDir = append(optVarDir, optSlices(optSliceInd));
     bslDir = append(bslVarDir, bslSlices(bslSliceInd));
@@ -237,34 +253,24 @@ function varBtnCallback(src, event)
     optDS = imageDatastore(append(optDir,fileExt));
     optIms = readall(optDS);
     
-    if SliceSel == 'X'
-        bslIm.ImageSource = bslIms{frame(1)};
-        optIm.ImageSource = optIms{frame(1)};
-    elseif SliceSel == 'Y'
-        bslIm.ImageSource = bslIms{frame(2)};
-        optIm.ImageSource = optIms{frame(2)};
-    elseif SliceSel == 'Z'
-        bslIm.ImageSource = bslIms{frame(3)};
-        optIm.ImageSource = optIms{frame(3)}; 
-    end
-    
-    
-    
+    bslIm.ImageSource = bslIms{frame(frameXYZ)};
+    optIm.ImageSource = optIms{frame(frameXYZ)};
 end
 
 function sliceBtnCallback(src, event)
     % Callback function called by Slice button group
     global SliceSel bslDS optDS bslIms optIms fileExt bslIm optIm...
-        optVarDir bslVarDir optSlices bslSlices optDir bslDir frame;
+        optVarDir bslVarDir optSlices bslSlices optDir bslDir frame...
+        frameXYZ;
     if event.NewValue.Tag == 'X'
-        % set slice selction
         SliceSel = 'X';
+        frameXYZ = 1;
     elseif event.NewValue.Tag == 'Y'
-        % set slice selction
         SliceSel = 'Y';
+        frameXYZ = 2;
     elseif event.NewValue.Tag == 'Z'
-        % set slice selction
-        SliceSel = 'Z'; 
+        SliceSel = 'Z';
+        frameXYZ = 3;
     end
     
     optSliceInd = find(endsWith(optSlices, SliceSel));
@@ -279,17 +285,13 @@ function sliceBtnCallback(src, event)
     optDS = imageDatastore(append(optDir,fileExt));
     optIms = readall(optDS);
     
-    if event.NewValue.Tag == 'X'
-        bslIm.ImageSource = bslIms{frame(1)};
-        optIm.ImageSource = optIms{frame(1)};
-    elseif event.NewValue.Tag == 'Y'
-        bslIm.ImageSource = bslIms{frame(2)};
-        optIm.ImageSource = optIms{frame(2)};
-    elseif event.NewValue.Tag == 'Z'
-        bslIm.ImageSource = bslIms{frame(3)};
-        optIm.ImageSource = optIms{frame(3)}; 
-    end
+    bslIm.ImageSource = bslIms{frame(frameXYZ)};
+    optIm.ImageSource = optIms{frame(frameXYZ)};
 end
+
+%function delBtnCallback(src, event)
+%
+%end
 %% Functions
 
 function delOut = delta(optIm, bslIm, var)

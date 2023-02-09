@@ -1,18 +1,18 @@
-bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL\CpT\05-04-2022_HC-CpT-Z';
-optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\CpT\23-A00-CSH-001-CpT-Z';
+%bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL\Cp\05-04-2022_HC-Cp-Y';
+%optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\Cp\23-A00-CSH-001-Cp-Y';
 
 
-optIm = im2double(imread(fullfile(optSel, 'frame00050.png')));
-bslIm = im2double(imread(fullfile(bslSel, 'frame00050.png')));
+%optDelIm = 255*im2single(imread(fullfile(optSel, 'frame00010.png')));
+%bslDelIm = 255*im2single(imread(fullfile(bslSel, 'frame00010.png')));
+
+optDelIm = 255*im2single(imread(fullfile(optDir, 'frame00035.png')));
+bslDelIm = 255*im2single(imread(fullfile(bslDir, 'frame00035.png')));
+
 
 %bslIm = imread(fullfile(bslSel, 'frame00055.png'));
-
-
-Var = 'CpT';
    
-
 %figure()
-%imshow(bslIm)
+%imshow(optDelIm/255)
 %impixelinfo()
     
     % Number of steps on colour scale.
@@ -71,11 +71,11 @@ Var = 'CpT';
     0.375;0.5;0.625;0.75];
     CpTLookup = [linspace(CpMax-CpStep,CpMin,nSteps)];
     
-    if strcmp(Var,'Cp')
+    if strcmp(VarSel,'Cp')
         Scale = CpScale;
         Delta = CpDelta;
         Lookup = CpLookup;
-    elseif strcmp(Var,'CpT')
+    elseif strcmp(VarSel,'CpT')
         Scale = CpTScale;
         Delta = CpTDelta;
         Lookup = CpTLookup;
@@ -88,22 +88,25 @@ Var = 'CpT';
     
     geom = [0,0,0];
     
-    delta = uint8(zeros(size(bslIm)));
-    
+    delta = uint8(zeros(size(bslDelIm)));
+    tic
+    zero = DelPal(7, [1,2,3]);
     for i = 1:size(delta,1)
         for j = 1:size(delta,2)
-            bsl = 255*[bslIm(i,j,1), bslIm(i,j,2), bslIm(i,j,3)];
-            opt = 255*[optIm(i,j,1), optIm(i,j,2), optIm(i,j,3)];
+            bsl = [bslDelIm(i,j,1),bslDelIm(i,j,2),bslDelIm(i,j,3)];
+            opt = [optDelIm(i,j,1),optDelIm(i,j,2),optDelIm(i,j,3)];
 
-            if abs(bsl-geom)<[3,3,3] | abs(opt-geom)<[3,3,3]
-                delta(i,j,[1,2,3]) = [0,0,0];
+            if bsl == [0,0,0] | opt == [0,0,0]
+                delta(i,j,:) = [0,0,0];
             elseif bsl == opt
-                delta(i,j,[1,2,3]) = DelPal(7, [1,2,3]);
+                delta(i,j,:) = zero;
             else
                 bslDel = abs(Scale-bsl);
                 optDel = abs(Scale-opt);
-                bslInd = find(bslDel(:,1)<10 & bslDel(:,2)<10 & bslDel(:,3)<10, 1);
-                optInd = find(optDel(:,1)<10 & optDel(:,2)<10 & optDel(:,3)<10, 1);
+                bslInd = find(bslDel(:,1)<10 & bslDel(:,2)<10 & ...
+                    bslDel(:,3)<10, 1);
+                optInd = find(optDel(:,1)<10 & optDel(:,2)<10 & ...
+                    optDel(:,3)<5, 1);
                 
                 if isempty(bslInd) | isempty(optInd)
                     del = 0;
@@ -111,21 +114,19 @@ Var = 'CpT';
                     bslVal = Lookup(bslInd);
                     optVal = Lookup(optInd);
                     del = optVal-bslVal;
-                end
-                
-                
-                if del<=-0.75
-                    delta(i,j,[1,2,3]) = DelPal(1, [1,2,3]);
-                elseif del>=0.75
-                    delta(i,j,[1,2,3]) = DelPal(13, [1,2,3]);
-                else
-                    k=find(Delta==del,1);
-                    delta(i,j,[1,2,3])=DelPal(k,[1,2,3]);
+                    if del<=-0.75
+                        delta(i,j,:) = DelPal(1, [1,2,3]);
+                    elseif del>=0.75
+                        delta(i,j,:) = DelPal(13, [1,2,3]);
+                    else
+                        k=find(Delta==del,1);
+                        delta(i,j,:)=DelPal(k,[1,2,3]);
+                    end
                 end
             end
         end
     end
-    
+    toc
     figure()
     imshow(delta)
     impixelinfo()
