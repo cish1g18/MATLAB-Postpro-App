@@ -5,10 +5,9 @@
 % Date: 01/10/2022
 
 %% Setup
-global frame fileExt optIm optIms bslIm bslIms VarSel SliceSel frameXYZ bslVars...
-    optVars optVarInd bslVarInd bslSel optSel bslVarDir optVarDir...
-    bslDir optDir bslDS optDS optSliceInd bslSliceInd optSlices...
-    bslSlices;
+global frame fileExt optIm optIms bslIm bslIms VarSel SliceSel frameXYZ...
+    bslVars optVars optVarInd bslVarInd bslSel optSel bslVarDir optVarDir...
+    bslDir optDir bslDS optDS optSliceInd bslSliceInd optSlices bslSlices;
 frame = [51,2,1]; %counter: keeps track of current frame for x,y,z slices
 frameXYZ = 1; % frame XYZ value (x=1,y=2,z=3)
 VarSel = 'Cp';
@@ -18,6 +17,12 @@ fileExt = '\*.png'; %default file extension
 
 App.UIFigure = uifigure('Name', 'Matlab Postpro App v1','KeyPressFcn',...
     @keyCallback);
+
+File = uimenu(App.UIFigure, "Text", 'File');
+BSLDropdown = uimenu(File, "Text", "BSL Selection", "MenuSelectedFcn",...
+    @BSLDropdownFcn);
+OptDropdown = uimenu(File, "Text", "Option Selection", ...
+    "MenuSelectedFcn", @OptDropdownFcn);
 
 Grid = uigridlayout(App.UIFigure,[3,3]);
 Grid.RowHeight = {30,'1x',90};
@@ -286,6 +291,22 @@ function sliceBtnCallback(src, event)
     optIms = readall(optDS);
     
     bslIm.ImageSource = bslIms{frame(frameXYZ)};
+    optIm.ImageSource = optIms{frame(frameXYZ)};
+end
+
+function BSLDropdownFcn(src, event)
+    global bslSel bslDS bslIm bslIms bslDir fileExt
+    bslSel = uigetdir(bslSel, 'BSL Directory');
+    bslDS = imageDatastore(append(bslDir,fileExt));
+    bslIms = readall(bslDS);
+    bslIm.ImageSource = bslIms{frame(frameXYZ)};
+end
+
+function OptDropdownFcn(src, event)
+    global optSel optDS optIm optIms optDir fileExt
+    optSel = uigetdir(optSel, 'BSL Directory');
+    optDS = imageDatastore(append(optDir,fileExt));
+    optIms = readall(optDS);
     optIm.ImageSource = optIms{frame(frameXYZ)};
 end
 

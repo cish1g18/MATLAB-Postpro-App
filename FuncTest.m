@@ -1,19 +1,5 @@
-%bslSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL\Cp\05-04-2022_HC-Cp-Y';
-%optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option\Cp\23-A00-CSH-001-Cp-Y';
-
-
-%optDelIm = 255*im2single(imread(fullfile(optSel, 'frame00010.png')));
-%bslDelIm = 255*im2single(imread(fullfile(bslSel, 'frame00010.png')));
-
-optDelIm = 255*im2single(imread(fullfile(optDir, 'frame00035.png')));
-bslDelIm = 255*im2single(imread(fullfile(bslDir, 'frame00035.png')));
-
-
-%bslIm = imread(fullfile(bslSel, 'frame00055.png'));
-   
-%figure()
-%imshow(optDelIm/255)
-%impixelinfo()
+    optDelIm = 255*im2single(imread(fullfile(optDir, strcat('frame',pad(num2str(frame(frameXYZ)-1),5,'left','0'),'.png'))));
+    bslDelIm = 255*im2single(imread(fullfile(bslDir, strcat('frame',pad(num2str(frame(frameXYZ)-1),5,'left','0'),'.png'))));
     
     % Number of steps on colour scale.
     nSteps = 32;
