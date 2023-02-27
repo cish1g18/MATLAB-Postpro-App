@@ -295,7 +295,7 @@ function sliceBtnCallback(src, event)
 end
 
 function BSLDropdownFcn(src, event)
-    global bslSel bslDS bslIm bslIms bslDir fileExt
+    global bslSel bslDS bslIm bslIms bslDir fileExt frameXYZ
     bslSel = uigetdir(bslSel, 'BSL Directory');
     bslDS = imageDatastore(append(bslDir,fileExt));
     bslIms = readall(bslDS);
@@ -303,7 +303,7 @@ function BSLDropdownFcn(src, event)
 end
 
 function OptDropdownFcn(src, event)
-    global optSel optDS optIm optIms optDir fileExt
+    global optSel optDS optIm optIms optDir fileExt frameXYZ
     optSel = uigetdir(optSel, 'BSL Directory');
     optDS = imageDatastore(append(optDir,fileExt));
     optIms = readall(optDS);
