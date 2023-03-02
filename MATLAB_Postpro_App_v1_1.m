@@ -1,4 +1,4 @@
-function Matlab_Postpro_App_V1_1()
+function MATLAB_Postpro_App_v1_1()
 %% MATLAB_Postpro_App_v1_1
 % App to display pairs of CFD postpro images and generate deltas
 %
@@ -6,12 +6,12 @@ function Matlab_Postpro_App_V1_1()
 % Date: 11/02/2023
 
 %% Setup
-%% UI elements
+% UI elements
 
 App.UIFigure = uifigure('Name', 'Matlab Postpro App v1');
 
-App.UIFigure.UserData.sel.frame = [51,2,1]; %counter: keeps track of current frame for x,y,z slices
-App.UIFigure.UserData.sel.frameXYZ = 1;
+App.UIFigure.UserData.sel.frame = [51,2,1,1]; %counter: keeps track of current frame for x,y,z,s slices
+App.UIFigure.UserData.sel.frameXYZS = 1;
 App.UIFigure.UserData.sel.var = 'Cp'; 
 App.UIFigure.UserData.sel.slice = 'X';
 App.UIFigure.UserData.sel.fileExt = '\*.png'; %default file extension 
@@ -24,10 +24,12 @@ App.UIFigure.UserData.File = uimenu(App.UIFigure, "Text", 'File');
 
 App.UIFigure.UserData.bsl.Dropdown = uimenu(App.UIFigure.UserData.File, ...
     "Text", "BSL Selection", "MenuSelectedFcn",@(src,event) ...
-    BSLDropdownFcn(src,event,App.UIFigure.UserData.sel));
+    BSLDropdownFcn(src,event,App.UIFigure.UserData.sel, ...
+    App.UIFigure.UserData.bsl,App.UIFigure.UserData.opt));
 App.UIFigure.UserData.opt.Dropdown = uimenu(App.UIFigure.UserData.File, ...
     "Text","Option Selection","MenuSelectedFcn", @(src,event) ...
-    OptDropdownFcn(src,event,App.UIFigure.UserData.sel));
+    OptDropdownFcn(src,event,App.UIFigure.UserData.sel, ...
+    App.UIFigure.UserData.bsl,App.UIFigure.UserData.opt));
 
 App.UIFigure.UserData.Grid = uigridlayout(App.UIFigure,[3,3]);
 App.UIFigure.UserData.Grid.RowHeight = {30,'1x',90};
@@ -121,6 +123,9 @@ App.UIFigure.UserData.yBtn = uitogglebutton( ...
 App.UIFigure.UserData.zBtn = uitogglebutton( ...
     App.UIFigure.UserData.Slice, 'Text', 'Z','Position', ...
     [62, 10, 22, 22], 'Tag', 'Z');
+App.UIFigure.UserData.sBtn = uitogglebutton( ...
+    App.UIFigure.UserData.Slice, 'Text', 'S','Position', ...
+    [88, 10, 22, 22], 'Tag', 'S');
 %% Select BSL and Option Folders
 
 uiwait(msgbox('Select BSL directory', 'modal'));
@@ -193,13 +198,13 @@ App.UIFigure.UserData.bsl.im = uiimage(App.UIFigure.UserData.Grid);
 App.UIFigure.UserData.bsl.im.Layout.Row = 2;
 App.UIFigure.UserData.bsl.im.Layout.Column = 1;
 App.UIFigure.UserData.bsl.im.ImageSource = App.UIFigure.UserData.bsl.ims{App.UIFigure.UserData.sel.frame(App. ...
-    UIFigure.UserData.sel.frameXYZ)};
+    UIFigure.UserData.sel.frameXYZS)};
 
 App.UIFigure.UserData.opt.im = uiimage(App.UIFigure.UserData.Grid);
 App.UIFigure.UserData.opt.im.Layout.Row = 2;
 App.UIFigure.UserData.opt.im.Layout.Column = 3;
 App.UIFigure.UserData.opt.im.ImageSource = App.UIFigure.UserData.opt.ims{App.UIFigure.UserData.sel.frame(App. ...
-    UIFigure.UserData.sel.frameXYZ)};
+    UIFigure.UserData.sel.frameXYZS)};
 
 App.UIFigure.UserData.del.im = uiimage(App.UIFigure.UserData.Grid);
 App.UIFigure.UserData.del.im.Layout.Row = 2;
@@ -211,9 +216,9 @@ function leftBtnCallback(src,event,sel, bsl, opt)
 
     App = ancestor(src,"figure","toplevel");
 
-    sel.frame(sel.frameXYZ) = mod(sel.frame(sel.frameXYZ)-2,100)+1;
-    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+    sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS)-2,100)+1;
+    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
 
     App.UserData.bsl = bsl;
     App.UserData.opt = opt;
@@ -223,10 +228,15 @@ end
 function rightBtnCallback(src,event,sel,bsl,opt)
 
     App = ancestor(src,"figure","toplevel");
-
-    sel.frame(sel.frameXYZ) = mod(sel.frame(sel.frameXYZ),100)+1;
-    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+    if sel.frameXYZS ~= 4
+        sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS),100)+1;
+        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
+    else
+        sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS),14)+1;
+        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
+    end
 
     App.UserData.bsl = bsl;
     App.UserData.opt = opt;
@@ -239,13 +249,13 @@ function keyCallback(src,event,sel,bsl,opt)
     App = ancestor(src,"figure","toplevel");
 
     if strcmp(event.Key,'leftarrow')
-        sel.frame(sel.frameXYZ) = mod(sel.frame(sel.frameXYZ)-2,100)+1;
-        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+        sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS)-2,100)+1;
+        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
     elseif strcmp(event.Key,'rightarrow')
-        sel.frame(sel.frameXYZ) = mod(sel.frame(sel.frameXYZ),100)+1;
-        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+        sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS),100)+1;
+        bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+        opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
     end  
     
     App.UserData.bsl = bsl;
@@ -310,8 +320,8 @@ function varBtnCallback(src,event,sel,bsl,opt)
     opt.DS = imageDatastore(append(opt.dir,sel.fileExt));
     opt.ims = readall(opt.DS);
     
-    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
 
     App.UserData.bsl = bsl;
     App.UserData.opt = opt;
@@ -326,15 +336,18 @@ function sliceBtnCallback(src,event,sel,bsl,opt)
 
     if event.NewValue.Tag == 'X'
         sel.slice = 'X';
-        sel.frameXYZ = 1;
+        sel.frameXYZS = 1;
     elseif event.NewValue.Tag == 'Y'
         sel.slice = 'Y';
-        sel.frameXYZ = 2;
+        sel.frameXYZS = 2;
     elseif event.NewValue.Tag == 'Z'
         sel.slice = 'Z';
-        sel.frameXYZ = 3;
+        sel.frameXYZS = 3;
+    elseif event.NewValueTag == 'S'
+        sel.slice = 'S';
+        sel.frameXYZS = 3;
     end
-
+    
     opt.sliceInd = find(endsWith(opt.slices, sel.slice));
     bsl.sliceInd = find(endsWith(bsl.slices, sel.slice));
         
@@ -347,29 +360,29 @@ function sliceBtnCallback(src,event,sel,bsl,opt)
     opt.DS = imageDatastore(append(opt.dir,sel.fileExt));
     opt.ims = readall(opt.DS);
     
-    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
-    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
+    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
 
     App.UserData.bsl = bsl;
     App.UserData.opt = opt;
     App.UserData.sel = sel;
 end
 
-function BSLDropdownFcn(src, event,sel)
+function BSLDropdownFcn(src, event,sel,bsl,opt)
 
     bsl.sel = uigetdir(bsl.sel, 'BSL Directory');
     bsl.DS = imageDatastore(append(bsl.dir,sel.fileExt));
     bsl.ims = readall(bsl.DS);
-    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZ)};
+    bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
 
 end
 
-function OptDropdownFcn(src, event,sel)
+function OptDropdownFcn(src, event,sel,bsl,opt)
 
     opt.sel = uigetdir(opt.sel, 'BSL Directory');
     opt.DS = imageDatastore(append(opt.dir,sel.fileExt));
     opt.ims = readall(opt.DS);
-    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZ)};
+    opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
 
 end
 
@@ -377,9 +390,9 @@ function delBtnCallback(src,event,sel,bsl,opt)
 
     App = ancestor(src,"figure","toplevel");
     opt.delIm = 255*im2single(imread(fullfile(opt.dir, strcat('frame', ...
-        pad(num2str(sel.frame(sel.frameXYZ)-1),5,'left','0'),'.png'))));
+        pad(num2str(sel.frame(sel.frameXYZS)-1),5,'left','0'),'.png'))));
     bsl.delIm = 255*im2single(imread(fullfile(bsl.dir, strcat('frame', ...
-        pad(num2str(sel.frame(sel.frameXYZ)-1),5,'left','0'),'.png'))));
+        pad(num2str(sel.frame(sel.frameXYZS)-1),5,'left','0'),'.png'))));
     
     % Number of steps on colour scale.
     nSteps = 32;
