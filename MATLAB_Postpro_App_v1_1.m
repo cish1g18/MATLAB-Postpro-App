@@ -101,7 +101,7 @@ App.UIFigure.UserData.cptBtn = uitogglebutton( ...
     [44, 40, 35, 22], 'Tag', 'CpT');
 App.UIFigure.UserData.vorBtn = uitogglebutton( ...
     App.UIFigure.UserData.Var, 'Text', 'Vorticity', 'Position',...
-    [83, 40, 60, 22], 'Tag', 'Vor');
+    [83, 40, 60, 22], 'Tag', 'Vor'); 
 App.UIFigure.UserData.velXBtn = uitogglebutton( ...
     App.UIFigure.UserData.Var, 'Text', 'NdVelX', 'Position',...
     [10, 10, 50, 22], 'Tag', 'UX');
@@ -131,10 +131,8 @@ App.UIFigure.UserData.sBtn = uitogglebutton( ...
 uiwait(msgbox('Select BSL directory', 'modal'));
 App.UIFigure.UserData.bsl.sel = uigetdir('BSL Directory');
 uiwait(msgbox('Select Option directory','modal'));
-App.UIFigure.UserData.opt.sel = uigetdir(App.UIFigure.UserData.bsl.sel, 'Option Directory');
-
-%bslsel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\Option';
-%optSel = 'C:\Users\caleb\Documents\FS 2022-23\Postpro\MATLAB Postpro App\Example Images\BSL';
+App.UIFigure.UserData.opt.sel = uigetdir(fullfile( ...
+    App.UIFigure.UserData.bsl.sel,'..'), 'Option Directory');
 
 App.UIFigure.UserData.bsl.vars = [];
 App.UIFigure.UserData.opt.vars = [];
@@ -370,20 +368,86 @@ end
 
 function BSLDropdownFcn(src, event,sel,bsl,opt)
 
-    bsl.sel = uigetdir(bsl.sel, 'BSL Directory');
+    bsl.sel = uigetdir(fullfile(bsl.sel,'..'), 'BSL Directory');
+    bsl.vars = [];
+
+    bsl.varStruct = dir(bsl.sel);
+    bsl.nVars = size(bsl.varStruct);
+    bsl.nVars = bsl.nVars(1);
+
+    for i=1:bsl.nVars
+        bsl.vars = [bsl.vars, append('\', string(bsl.varStruct(i).name))];
+    end
+
+    bsl.varInd = find(endsWith(bsl.vars, sel.var));
+
+    bsl.varDir = append(bsl.sel, bsl.vars(bsl.varInd));
+
+    bsl.slices = [];
+
+    bsl.sliceStruct = dir(bsl.varDir);
+    bsl.nSlices = size(bsl.sliceStruct);
+    bsl.nSlices=bsl.nSlices(1);
+
+    for i=1:bsl.nSlices
+        bsl.slices = [bsl.slices, append('\', string(bsl.sliceStruct(i).name))];
+    end
+
+    bsl.sliceInd = find(endsWith(bsl.slices, sel.slice));
+
+    bsl.dir = append(bsl.varDir, bsl.slices(bsl.sliceInd));
+    
+    % Load all images in BSL folder
+
     bsl.DS = imageDatastore(append(bsl.dir,sel.fileExt));
     bsl.ims = readall(bsl.DS);
+
     bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
 
+    App.UserData.bsl = bsl;
+    App.UserData.sel = sel;
 end
 
 function OptDropdownFcn(src, event,sel,bsl,opt)
 
-    opt.sel = uigetdir(opt.sel, 'BSL Directory');
+    opt.sel = uigetdir(fullfile(opt.sel,'..'), 'Option Directory');
+    opt.vars = [];
+
+    opt.varStruct = dir(opt.sel);
+    opt.nVars = size(opt.varStruct);
+    opt.nVars = opt.nVars(1);
+
+    for i=1:opt.nVars
+        opt.vars = [opt.vars, append('\', string(opt.varStruct(i).name))];
+    end
+
+    opt.varInd = find(endsWith(opt.vars, sel.var));
+
+    opt.varDir = append(opt.sel, opt.vars(opt.varInd));
+
+    opt.slices = [];
+
+    opt.sliceStruct = dir(opt.varDir);
+    opt.nSlices = size(opt.sliceStruct);
+    opt.nSlices=opt.nSlices(1);
+
+    for i=1:opt.nSlices
+        opt.slices = [opt.slices, append('\', string(opt.sliceStruct(i).name))];
+    end
+
+    opt.sliceInd = find(endsWith(opt.slices, sel.slice));
+
+    opt.dir = append(opt.varDir, opt.slices(opt.sliceInd));
+    
+    % Load all images in BSL folder
+
     opt.DS = imageDatastore(append(opt.dir,sel.fileExt));
     opt.ims = readall(opt.DS);
+
     opt.im.ImageSource = opt.ims{sel.frame(sel.frameXYZS)};
 
+    App.UserData.opt = opt;
+    App.UserData.sel = sel;
 end
 
 function delBtnCallback(src,event,sel,bsl,opt)
