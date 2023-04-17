@@ -1,4 +1,3 @@
-function MATLAB_Postpro_App_v1_1()
 %% MATLAB_Postpro_App_v1_1
 % App to display pairs of CFD postpro images and generate deltas
 %
@@ -11,9 +10,9 @@ function MATLAB_Postpro_App_v1_1()
 App.UIFigure = uifigure('Name', 'Matlab Postpro App v1');
 
 App.UIFigure.UserData.sel.frame = [51,2,1,1]; %counter: keeps track of current frame for x,y,z,s slices
-App.UIFigure.UserData.sel.frameXYZS = 1;
+App.UIFigure.UserData.sel.frameXYZS = 3;
 App.UIFigure.UserData.sel.var = 'Cp'; 
-App.UIFigure.UserData.sel.slice = 'X';
+App.UIFigure.UserData.sel.slice = 'Z';
 App.UIFigure.UserData.sel.fileExt = '\*.png'; %default file extension 
 
 set(App.UIFigure,'KeyPressFcn',@(src,event)keyCallback(src,event, ...
@@ -103,14 +102,17 @@ App.UIFigure.UserData.vorBtn = uitogglebutton( ...
     App.UIFigure.UserData.Var, 'Text', 'Vorticity', 'Position',...
     [83, 40, 60, 22], 'Tag', 'Vor'); 
 App.UIFigure.UserData.velXBtn = uitogglebutton( ...
-    App.UIFigure.UserData.Var, 'Text', 'NdVelX', 'Position',...
-    [10, 10, 50, 22], 'Tag', 'UX');
+    App.UIFigure.UserData.Var, 'Text', 'Ux', 'Position',...
+    [10, 10, 30, 22], 'Tag', 'UX');
 App.UIFigure.UserData.velYBtn = uitogglebutton( ...
-    App.UIFigure.UserData.Var, 'Text', 'NdVelY', 'Position',...
-    [64, 10, 50, 22], 'Tag', 'UY');
+    App.UIFigure.UserData.Var, 'Text', 'Uy', 'Position',...
+    [44, 10, 30, 22], 'Tag', 'UY');
 App.UIFigure.UserData.velZBtn = uitogglebutton( ...
-    App.UIFigure.UserData.Var, 'Text', 'NdVelZ', 'Position',...
-    [118, 10, 50, 22], 'Tag', 'UZ');
+    App.UIFigure.UserData.Var, 'Text', 'Uz', 'Position',...
+    [78, 10, 30, 22], 'Tag', 'UZ');
+App.UIFigure.UserData.velMagBtn = uitogglebutton( ...
+    App.UIFigure.UserData.Var, 'Text', 'U', 'Position',...
+    [112, 10, 30, 22], 'Tag', 'U');
 
 
 % Slice selection buttons
@@ -183,6 +185,8 @@ App.UIFigure.UserData.bsl.sliceInd = find(endsWith(App.UIFigure.UserData.bsl.sli
 
 App.UIFigure.UserData.opt.dir = append(App.UIFigure.UserData.opt.varDir, App.UIFigure.UserData.opt.slices(App.UIFigure.UserData.opt.sliceInd));
 App.UIFigure.UserData.bsl.dir = append(App.UIFigure.UserData.bsl.varDir, App.UIFigure.UserData.bsl.slices(App.UIFigure.UserData.bsl.sliceInd));
+
+
 %% Load all images in BSL and Option folders
 
 App.UIFigure.UserData.bsl.DS = imageDatastore(append(App.UIFigure.UserData.bsl.dir,App.UIFigure.UserData.sel.fileExt));
@@ -226,6 +230,7 @@ end
 function rightBtnCallback(src,event,sel,bsl,opt)
 
     App = ancestor(src,"figure","toplevel");
+
     if sel.frameXYZS ~= 4
         sel.frame(sel.frameXYZS) = mod(sel.frame(sel.frameXYZS),100)+1;
         bsl.im.ImageSource = bsl.ims{sel.frame(sel.frameXYZS)};
@@ -275,43 +280,81 @@ function varBtnCallback(src,event,sel,bsl,opt)
     elseif strcmp(event.NewValue.Tag, 'Vor')
         sel.var = 'Vorticity';  
     elseif strcmp(event.NewValue.Tag, 'UX')
-        sel.var = 'X';
+        sel.var = 'Velocity_x';
     elseif strcmp(event.NewValue.Tag, 'UY')
-        sel.var = 'Y';
+        sel.var = 'Velocity_y';
     elseif strcmp(event.NewValue.Tag, 'UZ')
-        sel.var = 'Z';  
+        sel.var = 'Velocity_z';
+    elseif strcmp(event.NewValue.Tag, 'U')
+        sel.var = 'Velocity';
     end
-
-    opt.varInd = find(endsWith(opt.vars, sel.var));
-    bsl.varInd = find(endsWith(bsl.vars, sel.var));
-
-    opt.varDir = append(opt.sel, opt.vars(opt.varInd));
-    bsl.varDir = append(bsl.sel, bsl.vars(bsl.varInd));
-
-    bsl.slices = [];
-    opt.slices = [];
-
-    bslSliceStruct = dir(bsl.varDir);
-    nBslSlices = size(bslSliceStruct);
-    nBslSlices = nBslSlices(1);
-
-    optSliceStruct = dir(opt.varDir);
-    nOptSlices = size(optSliceStruct);
-    nOptSlices = nOptSlices(1);
     
-    for i=1:nBslSlices
-        bsl.slices = [bsl.slices, append('\', string(bslSliceStruct(i).name))];
-    end
+    if strcmp(sel.var,'Cp') || strcmp(sel.var,'CpT') || strcmp(sel.var,'Vorticity')
+        opt.varInd = find(endsWith(opt.vars, sel.var));
+        bsl.varInd = find(endsWith(bsl.vars, sel.var));
 
-    for i=1:nOptSlices
-        opt.slices = [opt.slices, append('\', string(optSliceStruct(i).name))];
-    end
+        opt.varDir = append(opt.sel, opt.vars(opt.varInd));
+        bsl.varDir = append(bsl.sel, bsl.vars(bsl.varInd));
 
-    opt.sliceInd = endsWith(opt.slices, sel.slice);
-    bsl.sliceInd = endsWith(bsl.slices, sel.slice);
+        bsl.slices = [];
+        opt.slices = [];
+
+        bslSliceStruct = dir(bsl.varDir);
+        nBslSlices = size(bslSliceStruct);
+        nBslSlices = nBslSlices(1);
+
+        optSliceStruct = dir(opt.varDir);
+        nOptSlices = size(optSliceStruct);
+        nOptSlices = nOptSlices(1);
     
-    opt.dir = append(opt.varDir, opt.slices(opt.sliceInd));
-    bsl.dir = append(bsl.varDir, bsl.slices(bsl.sliceInd));
+        for i=1:nBslSlices
+            bsl.slices = [bsl.slices, append('\', string(bslSliceStruct(i).name))];
+        end
+        
+        for i=1:nOptSlices
+            opt.slices = [opt.slices, append('\', string(optSliceStruct(i).name))];
+        end
+
+        opt.sliceInd = endsWith(opt.slices, sel.slice);
+        bsl.sliceInd = endsWith(bsl.slices, sel.slice);
+    
+        opt.dir = append(opt.varDir, opt.slices(opt.sliceInd));
+        bsl.dir = append(bsl.varDir, bsl.slices(bsl.sliceInd));
+
+    else
+        opt.varInd = find(endsWith(opt.vars, sel.slice));
+        bsl.varInd = find(endsWith(bsl.vars, sel.slice));
+
+        opt.varDir = append(opt.sel, opt.vars(opt.varInd));
+        bsl.varDir = append(bsl.sel, bsl.vars(bsl.varInd));
+        
+        bsl.slices = [];
+        opt.slices = [];
+
+        bslSliceStruct = dir(bsl.varDir);
+        nBslSlices = size(bslSliceStruct);
+        nBslSlices = nBslSlices(1);
+
+        optSliceStruct = dir(opt.varDir);
+        nOptSlices = size(optSliceStruct);
+        nOptSlices = nOptSlices(1);
+    
+        for i=1:nBslSlices
+            bsl.slices = [bsl.slices, append('\', string(bslSliceStruct(i).name))];
+        end
+        
+        for i=1:nOptSlices
+            opt.slices = [opt.slices, append('\', string(optSliceStruct(i).name))];
+        end
+
+        opt.sliceInd = endsWith(opt.slices, strcat(sel.var,'-',sel.slice));
+        bsl.sliceInd = endsWith(bsl.slices, strcat(sel.var,'-',sel.slice));
+        
+        opt.dir = append(opt.varDir, opt.slices(opt.sliceInd));
+        bsl.dir = append(bsl.varDir, bsl.slices(bsl.sliceInd));
+    end
+
+    
     
     bsl.DS = imageDatastore(append(bsl.dir,sel.fileExt));
     bsl.ims = readall(bsl.DS);
@@ -367,6 +410,8 @@ function sliceBtnCallback(src,event,sel,bsl,opt)
 end
 
 function BSLDropdownFcn(src, event,sel,bsl,opt)
+    
+    App = ancestor(src,"figure","toplevel");
 
     bsl.sel = uigetdir(fullfile(bsl.sel,'..'), 'BSL Directory');
     bsl.vars = [];
@@ -409,6 +454,8 @@ function BSLDropdownFcn(src, event,sel,bsl,opt)
 end
 
 function OptDropdownFcn(src, event,sel,bsl,opt)
+    
+    App = ancestor(src,"figure","toplevel");
 
     opt.sel = uigetdir(fullfile(opt.sel,'..'), 'Option Directory');
     opt.vars = [];
@@ -471,6 +518,10 @@ function delBtnCallback(src,event,sel,bsl,opt)
     VorMin = -500;
     VelMax = 1.5;
     VelMin = -1.5;
+    UMax = 2;
+    UMin = 0;
+    UxyzMax = 1.5;
+    UxyzMin = -1.5;
     
     % Calculation of numerical range of colour scale.
     % Move to GUI setup
@@ -482,6 +533,11 @@ function delBtnCallback(src,event,sel,bsl,opt)
     VorStep = VorRange/nSteps;
     VelRange = VelMax-VelMin;
     VelStep = VelRange/nSteps;
+    URange = UMax-UMin;
+    UStep = URange/nSteps;
+    UxyzRange = UxyzMax-UxyzMin;
+    UxyzStep = UxyzRange/nSteps;
+
     
     % Delta Palette
     DelPal = [[234,0,255];[137,59,255];[33,102,243];[0,161,250];...
@@ -497,8 +553,9 @@ function delBtnCallback(src,event,sel,bsl,opt)
         [20,61,202];[9,27,204];[69,0,195];[105,0,182];[132,0,168];...
         [153,0,153];[143,0,143];[132,0,132];[121,0,121];[108,0,108];...
         [94,0,94];[76,0,76];[54,0,54];[0,0,0]];
-    CpDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;0.375;...
-        0.5;0.625;0.75];
+    %CpDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;0.375;...
+    %    0.5;0.625;0.75];
+    CpDelta = (CpRange/32)*[-6;-5;-4;-3;-2;-1;0;1;2;3;4;5;6];
     CpLookup = [linspace(CpMax-CpStep,CpMin,nSteps)];
     
     %CpT
@@ -510,9 +567,39 @@ function delBtnCallback(src,event,sel,bsl,opt)
         [71,208,25];[21,207,42];[42,215,85];[56,223,112];[66,231,134];...
         [77,236,154];[96,206,191];[106,172,213];[106,133,222];...
         [102,83,226];[72,59,215];[0,0,204]];
-    CpTDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;...
-    0.375;0.5;0.625;0.75];
-    CpTLookup = [linspace(CpMax-CpStep,CpMin,nSteps)];
+    %CpTDelta = [-0.75;-0.625;-0.5;-0.375;-0.25;-0.125;0;0.125;0.25;...
+    %0.375;0.5;0.625;0.75];
+    CpTDelta = (CpTRange/32)*[-6;-5;-4;-3;-2;-1;0;1;2;3;4;5;6];
+    CpTLookup = [linspace(CpTMax-CpTStep,CpTMin,nSteps)];
+
+    %Vorticity
+    VorScale = [[255,0,51];[255,72,56];[255,102,60];[255,124,64];...
+        [254,158,70];[254,188,75];[253,214,80];[252,237,85];...
+        [248,252,87];[230,246,80];[211,240,74];[190,233,66];...
+        [167,227,58];[141,221,49];[110,214,38];[63,207,22];[33,202,66];...
+        [67,199,114];[74,195,147];[88,192,173];[99,188,197];...
+        [101,180,208];[85,162,204];[66,141,200];[39,118,196];...
+        [32,97,199];[23,70,201];[7,21,204];[74,0,193];[107,0,181];...
+        [132,0,168];[153,0,153]];
+    VorDelta = (VorRange/32)*[-6;-5;-4;-3;-2;-1;0;1;2;3;4;5;6];
+    VorLookup = [linspace(VorMax-VorStep, VorMin, nSteps)];
+
+    %VelMag
+    UScale = [[255,0,255];[255,80,255];[255,113,255];[255,138,255];...
+        [255,150,246];[255,138,217];[255,126,183];[255,112,141];...
+        [255,97,98];[255,78,85];[255,52,68];[255,0,51];[255,0,51];...
+        [255,0,51];[255,53,48];[255,91,41];[255,118,33];[255,139,21];...
+        [255,163,24];[254,195,52];[253,222,70];[252,246,84];...
+        [241,249,84];[225,244,78];[207,238,72];[188,233,66];...
+        [169,228,59];[152,223,53];[131,219,46];[107,214,37];[76,209,26];...
+        [0,204,0]];
+    UDelta = (URange/32)*[-6;-5;-4;-3;-2;-1;0;1;2;3;4;5;6];
+    ULookup = [linspace(UMax-UStep, UMin, nSteps)];
+
+    %Uxyz
+    UxyzScale = VorScale;
+    UxyzDelta = (UxyzRange/32)*[-6;-5;-4;-3;-2;-1;0;1;2;3;4;5;6];
+    UxyzLookup = [linspace(UxyzMax-UxyzStep,UxyzMin, nSteps)];
     
     if strcmp(sel.var,'Cp')
         Scale = CpScale;
@@ -522,10 +609,18 @@ function delBtnCallback(src,event,sel,bsl,opt)
         Scale = CpTScale;
         Delta = CpTDelta;
         Lookup = CpTLookup;
-    %elseif strcmp(Var,'Vor')
-    %    Scale = VorScale;
-    %    Delta = VorDelta;
-    %    Lookup = VorLookup;
+    elseif strcmp(sel.var,'Vor')
+        Scale = VorScale;
+        Delta = VorDelta;
+        Lookup = VorLookup;
+    elseif strcmp(sel.var, 'Velocity')
+        Scale = UScale;
+        Delta = UDelta;
+        Lookup = ULookup;
+    else
+        Scale = UxyzScale;
+        Delta = UxyzDelta;
+        Lookup = UxyzLookup;
     end
     
     geom = [0,0,0];
@@ -557,9 +652,9 @@ function delBtnCallback(src,event,sel,bsl,opt)
                     bslVal = Lookup(bslInd);
                     optVal = Lookup(optInd);
                     del = optVal-bslVal;
-                    if del<=-0.75
+                    if del<=Delta(1)
                         delta(i,j,:) = DelPal(1, [1,2,3]);
-                    elseif del>=0.75
+                    elseif del>=Delta(13)
                         delta(i,j,:) = DelPal(13, [1,2,3]);
                     else
                         k=find(Delta==del,1);
@@ -572,5 +667,4 @@ function delBtnCallback(src,event,sel,bsl,opt)
 
     App.UserData.del.im.ImageSource = delta;
 
-end
 end
